@@ -1,0 +1,2 @@
+source devel/setup.bash
+rosrun uav_offboard manual_arm_offboard_node
