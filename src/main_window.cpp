@@ -1108,7 +1108,7 @@ void MainWindow::save_pic_btn_clicked()
 
     QString time_str;
     QTime time(QTime::currentTime());
-    time_str = time.toString("hh:mm:ss");
+    time_str = time.toString("hh-mm-ss-");
 qDebug()<<"plots saved at: " + time_str;
 //qDebug()<<time;
     
