@@ -17,3 +17,4 @@ if you want to see acceleration and jerk plots,
 go to catkin_ws/src/px4_gui/src/main_window.cpp
 change line 31 to :
 plotting_row34 = 1 ;
+# test
