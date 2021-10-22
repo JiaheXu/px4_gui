@@ -110,6 +110,7 @@ private:
 
     std::string position_setpoint_topic;
     std::string velocity_setpoint_topic;
+    std::string ground_distance_topic;
 
     nav_msgs::Path path,goal_path;
 

@@ -24,30 +24,14 @@
    <layout class="QVBoxLayout" name="verticalLayout_16">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_15">
+      <property name="spacing">
+       <number>4</number>
+      </property>
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QLabel" name="label_19">
-          <property name="minimumSize">
-           <size>
-            <width>32</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>32</width>
-            <height>32</height>
-           </size>
-          </property>
-          <property name="text">
-           <string/>
-          </property>
-          <property name="pixmap">
-           <pixmap>:/images/robot2.png</pixmap>
-          </property>
-         </widget>
-        </item>
+        <property name="spacing">
+         <number>4</number>
+        </property>
         <item>
          <widget class="QLabel" name="label_18">
           <property name="text">
@@ -147,10 +131,23 @@
          </spacer>
         </item>
         <item>
+         <widget class="QPushButton" name="start_btn">
+          <property name="minimumSize">
+           <size>
+            <width>140</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Start</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="update_btn">
           <property name="minimumSize">
            <size>
-            <width>200</width>
+            <width>140</width>
             <height>0</height>
            </size>
           </property>
@@ -163,7 +160,7 @@
          <widget class="QPushButton" name="pause_btn">
           <property name="minimumSize">
            <size>
-            <width>200</width>
+            <width>140</width>
             <height>0</height>
            </size>
           </property>
@@ -186,10 +183,33 @@
          </spacer>
         </item>
         <item>
+         <widget class="QLabel" name="label_24">
+          <property name="text">
+           <string>Test number#</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="experiment_num">
+          <property name="maximumSize">
+           <size>
+            <width>50</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="maximum">
+           <number>1000</number>
+          </property>
+          <property name="value">
+           <number>1</number>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="save_pic_btn">
           <property name="minimumSize">
            <size>
-            <width>200</width>
+            <width>140</width>
             <height>0</height>
            </size>
           </property>
@@ -1771,7 +1791,7 @@ QProgressBar {
      <x>0</x>
      <y>0</y>
      <width>1794</width>
-     <height>22</height>
+     <height>28</height>
     </rect>
    </property>
   </widget>

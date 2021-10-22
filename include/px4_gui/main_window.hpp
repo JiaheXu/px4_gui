@@ -49,6 +49,7 @@ class MainWindow : public QMainWindow
       int stop_1 = 0;
       int stop_2 = 0;
       int record_num=0;
+      QSharedPointer<QCPAxisTickerTime> timeTicker;
 
       std::vector<double> position_setpoint_val;
       std::vector<double> velocity_setpoint_val;

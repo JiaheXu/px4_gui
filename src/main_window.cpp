@@ -42,16 +42,16 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     ui->label_statue_text->setText("online");
 
     // get current topics
-qDebug() << "topics!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+
     initTopicList();
     //qcustomplot
-qDebug() << "plots!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+
     initQcustomplot();
 
     setLegend();
-qDebug() << "timer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+
     TickerTime();
-qDebug() << "connections!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+
     // start communications between gui & ros
 connections();
     timer = new QTimer(this);
@@ -75,6 +75,7 @@ void MainWindow::ROSRUN()
 
 void MainWindow::initQcustomplot()
 {
+qDebug() << "plots!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     ui->horizontalScrollBar_1->setPageStep( 30 );
 
 //https://color.adobe.com/zh/create/color-wheel
@@ -573,14 +574,17 @@ void MainWindow::setLegend()
 //goal 1234
 //pose setpoint 1234
 //vel_yaw 4
+
+#define Alignment Qt::AlignTop|Qt::AlignRight
+QColor legend_color = QColor(255,255,255,0);
     ui->plot_1_1->legend->setVisible(true);
     ui->plot_1_2->legend->setVisible(true);
     ui->plot_1_3->legend->setVisible(true);
     ui->plot_1_4->legend->setVisible(true);
 
     ui->plot_1_1->legend->setFont(legendFont);
-    ui->plot_1_1->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_1_1->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_1_1->legend->setBrush(QBrush(legend_color));
+    ui->plot_1_1->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_1_1->graph(0)->setName("x");
     ui->plot_1_1->graph(1)->setName("x goal");
     ui->plot_1_1->graph(2)->setName("x setpoint");
@@ -588,8 +592,8 @@ void MainWindow::setLegend()
     ui->plot_1_1->yAxis->setLabel("coordinate  m");
 
     ui->plot_1_2->legend->setFont(legendFont);
-    ui->plot_1_2->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_1_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_1_2->legend->setBrush(QBrush(legend_color));
+    ui->plot_1_2->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_1_2->graph(0)->setName("y");
     ui->plot_1_2->graph(1)->setName("y goal");
     ui->plot_1_2->graph(2)->setName("y setpoint");
@@ -597,8 +601,8 @@ void MainWindow::setLegend()
     ui->plot_1_2->yAxis->setLabel("coordinate  m");
 
     ui->plot_1_3->legend->setFont(legendFont);
-    ui->plot_1_3->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_1_3->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_1_3->legend->setBrush(QBrush(legend_color));
+    ui->plot_1_3->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_1_3->graph(0)->setName("z");
     ui->plot_1_3->graph(1)->setName("z goal");
     ui->plot_1_3->graph(2)->setName("z setpoint");
@@ -606,8 +610,8 @@ void MainWindow::setLegend()
     ui->plot_1_3->yAxis->setLabel("coordinate  m");
 
     ui->plot_1_4->legend->setFont(legendFont);
-    ui->plot_1_4->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_1_4->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_1_4->legend->setBrush(QBrush(legend_color));
+    ui->plot_1_4->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_1_4->graph(0)->setName("yaw");
     ui->plot_1_4->graph(1)->setName("yaw goal");
     ui->plot_1_4->graph(2)->setName("yaw setpoint");
@@ -619,14 +623,15 @@ void MainWindow::setLegend()
 //velo 1234
 //velo setpoint 1234
 //velo_yaw 123
+
     ui->plot_2_1->legend->setVisible(true);
     ui->plot_2_2->legend->setVisible(true);
     ui->plot_2_3->legend->setVisible(true);
     ui->plot_2_4->legend->setVisible(true);
 
     ui->plot_2_1->legend->setFont(legendFont);
-    ui->plot_2_1->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_2_1->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_2_1->legend->setBrush(QBrush(legend_color));
+    ui->plot_2_1->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_2_1->graph(0)->setName("vx");
     ui->plot_2_1->graph(1)->setName("vx setpoint");
     ui->plot_2_1->graph(2)->setName("vx vel_yaw");
@@ -634,8 +639,8 @@ void MainWindow::setLegend()
     ui->plot_2_1->yAxis->setLabel("velocity  m/s");
 
     ui->plot_2_2->legend->setFont(legendFont);
-    ui->plot_2_2->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_2_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_2_2->legend->setBrush(QBrush(legend_color));
+    ui->plot_2_2->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_2_2->graph(0)->setName("vy");
     ui->plot_2_2->graph(1)->setName("vy setpoint");
     ui->plot_2_2->graph(2)->setName("vy vel_yaw");
@@ -643,8 +648,8 @@ void MainWindow::setLegend()
     ui->plot_2_2->yAxis->setLabel("velocity  m/s");
 
     ui->plot_2_3->legend->setFont(legendFont);
-    ui->plot_2_3->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_2_3->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_2_3->legend->setBrush(QBrush(legend_color));
+    ui->plot_2_3->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_2_3->graph(0)->setName("vz");
     ui->plot_2_3->graph(1)->setName("vz setpoint");
     ui->plot_2_3->graph(2)->setName("vz vel_yaw");
@@ -652,8 +657,8 @@ void MainWindow::setLegend()
     ui->plot_2_3->yAxis->setLabel("velocity  m/s");
 
     ui->plot_2_4->legend->setFont(legendFont);
-    ui->plot_2_4->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_2_4->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_2_4->legend->setBrush(QBrush(legend_color));
+    ui->plot_2_4->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_2_4->graph(0)->setName("vyaw");
     ui->plot_2_4->graph(1)->setName("vyaw setpoint");
     ui->plot_2_4->xAxis->setLabel("time s");
@@ -666,22 +671,22 @@ void MainWindow::setLegend()
     ui->plot_3_3->legend->setVisible(true);
 
     ui->plot_3_1->legend->setFont(legendFont);
-    ui->plot_3_1->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_3_1->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_3_1->legend->setBrush(QBrush(legend_color));
+    ui->plot_3_1->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_3_1->graph(0)->setName("x accel");
     ui->plot_3_1->xAxis->setLabel("time s");
     ui->plot_3_1->yAxis->setLabel("accel  m/s^2");
 
     ui->plot_3_2->legend->setFont(legendFont);
-    ui->plot_3_2->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_3_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_3_2->legend->setBrush(QBrush(legend_color));
+    ui->plot_3_2->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_3_2->graph(0)->setName("y accel");
     ui->plot_3_2->xAxis->setLabel("time s");
     ui->plot_3_2->yAxis->setLabel("accel  m/s^2");
 
     ui->plot_3_3->legend->setFont(legendFont);
-    ui->plot_3_3->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_3_3->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_3_3->legend->setBrush(QBrush(legend_color));
+    ui->plot_3_3->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_3_3->graph(0)->setName("z accel");
     ui->plot_3_3->xAxis->setLabel("time s");
     ui->plot_3_3->yAxis->setLabel("accel  m/s^2");
@@ -692,22 +697,22 @@ void MainWindow::setLegend()
     ui->plot_4_3->legend->setVisible(true);
 
     ui->plot_4_1->legend->setFont(legendFont);
-    ui->plot_4_1->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_4_1->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_4_1->legend->setBrush(QBrush(legend_color));
+    ui->plot_4_1->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_4_1->graph(0)->setName("x jerk");
     ui->plot_4_1->xAxis->setLabel("time s");
     ui->plot_4_1->yAxis->setLabel("jerk  m/s^3");
 
     ui->plot_4_2->legend->setFont(legendFont);
-    ui->plot_4_2->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_4_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_4_2->legend->setBrush(QBrush(legend_color));
+    ui->plot_4_2->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_4_2->graph(0)->setName("y jerk");
     ui->plot_4_2->xAxis->setLabel("time s");
     ui->plot_4_2->yAxis->setLabel("jerk  m/s^2");
 
     ui->plot_4_3->legend->setFont(legendFont);
-    ui->plot_4_3->legend->setBrush(QBrush(QColor(255,255,255,230)));
-    ui->plot_4_3->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignTop|Qt::AlignLeft);
+    ui->plot_4_3->legend->setBrush(QBrush(legend_color));
+    ui->plot_4_3->axisRect()->insetLayout()->setInsetAlignment(0, Alignment);
     ui->plot_4_3->graph(0)->setName("z jerk");
     ui->plot_4_3->xAxis->setLabel("time s");
     ui->plot_4_3->yAxis->setLabel("jerk  m/s^2");
@@ -716,7 +721,10 @@ void MainWindow::setLegend()
 }
 void MainWindow::TickerTime()
 {
-    QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
+qDebug() << "new timer!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    QSharedPointer<QCPAxisTickerTime> newtimeTicker(new QCPAxisTickerTime) ;
+    
+    timeTicker = newtimeTicker;
     timeTicker->setTimeFormat("%s");
     ui->plot_1_1->xAxis->setTicker(timeTicker);
     ui->plot_1_2->xAxis->setTicker(timeTicker);
@@ -743,6 +751,7 @@ void MainWindow::TickerTime()
 
 void MainWindow::connections()
 {
+qDebug() << "connections!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     QObject::connect(&qnode, SIGNAL(rosShutdown()), this, SLOT(slot_rosShutdown()));
     QObject::connect(&qnode, SIGNAL(Master_shutdown()), this, SLOT(slot_rosShutdown()));
 
@@ -825,6 +834,9 @@ void MainWindow::connections()
 
     connect(ui->start_recording_btn,SIGNAL(clicked()),this,SLOT(start_recording() ) );
     connect(ui->stop_recording_btn,SIGNAL(clicked()),this,SLOT(stop_recording() ) );
+
+
+
     connect(ui->refreash_topic_btn,SIGNAL(clicked()),this,SLOT(refreashTopicList() ) );
 
     // power signal emit from qnode
@@ -1313,7 +1325,8 @@ void MainWindow::stop_recording()
 	    int ret = system(cmd_str.c_str());
 	    std::cout << "## stop rosbag record cmd: " << cmd_str << std::endl;
 	}
-
+// stop updating
+	stop = 1;
 }
 
 
@@ -1331,6 +1344,7 @@ void MainWindow::inform(QString strdata)
 
 void MainWindow::initTopicList()
 {
+qDebug() << "topics!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     ui->topic_listWidget->clear();
     ui->topic_listWidget->addItem(QString("%1   (%2)").arg("Name","Type"));
     QMap<QString,QString> topic_list= qnode.get_topic_list();

@@ -106,7 +106,7 @@ bool QNode::init()
     gripper_angle_topic = "/servo/angle";
     gripper_command_topic = "/servo/command";
 
-
+    //ground_distance = "/mavros/px4flow/ground_distance";
     // battery subscriber
     power_sub = n.subscribe( battery_topic ,1,&QNode::batteryCallback,this);
 
