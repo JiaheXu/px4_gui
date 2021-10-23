@@ -49,6 +49,11 @@ class MainWindow : public QMainWindow
       int stop_1 = 0;
       int stop_2 = 0;
       int record_num=0;
+      double lastPointKey1=0;
+      double lastPointKey2=0;
+      double lastPointKey3=0;
+      double offset = 0;
+
       QSharedPointer<QCPAxisTickerTime> timeTicker;
 
       std::vector<double> position_setpoint_val;
@@ -64,15 +69,16 @@ class MainWindow : public QMainWindow
     
       void closeEvent(QCloseEvent *event); // Overloaded function
       
-      void TickerTime();
+      
       void setLegend();
       void initQcustomplot();
       void initTopicList();
       
-      
-
+      void connections();
+      void disconnections();
     public slots:
-     
+        void TickerTime();
+        void start_from_the_beginning();
         void start_recording();
         void stop_recording();
         void pause_btn_clicked();
@@ -155,7 +161,7 @@ class MainWindow : public QMainWindow
     private:
         Ui::MainWindowDesign *ui;
       
-        void connections();
+        
         void inform(QString);
         
         QNode qnode;

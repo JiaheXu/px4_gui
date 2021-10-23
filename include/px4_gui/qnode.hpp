@@ -48,6 +48,7 @@ public:
     bool init();
     void disinit();
     void run();
+    void stop(); 
     void gripper_publish(int value);
     QMap<QString,QString> get_topic_list();
 	

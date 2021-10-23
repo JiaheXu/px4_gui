@@ -16,58 +16,43 @@
 namespace px4_gui {
 
 using namespace Qt;
-
-
 MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     : QMainWindow(parent),
-      ui(new Ui::MainWindowDesign), 
+      ui(new Ui::MainWindowDesign),
       qnode(argc,argv)
 {
     ui->setupUi(this);
     setWindowIcon(QIcon(":/images/AE.png"));
     ui->tab_manager->setCurrentIndex(0); 
-    
-//decide whether to polt row 3 & 4 . 0 for no 1, for yes
-    plotting_row34 = 0 ;
-
-
-    //simple version for local GUI
-    // might need to modify with Readsettings in future version
-    //local
-    // qnode.init("http://127.0.0.1:11311/", "127.0.0.1" );
-    qnode.init();
     // update some GUI components for online status
     ui->label_robot_staue_img->setPixmap(QPixmap::fromImage(QImage("://images/online.png")));
     ui->label_statue_text->setStyleSheet("color:green;");
     ui->label_statue_text->setText("online");
-
+    qnode.init();
     // get current topics
-
     initTopicList();
-    //qcustomplot
+    start_from_the_beginning();
+}
+void MainWindow::start_from_the_beginning()
+{
+//decide whether to polt row 3 & 4 . 0 for no ,1 for yes
+    plotting_row34 = int(ui->extra_plots_btn->isChecked()) ;
+    disconnections();
+
+// since xAxis is controlled by the coord we give to plot() function
+// for simplicity we just record offset(last time we click start button)
+// and make the timeline back to 0
+    offset = lastPointKey1;
 
     initQcustomplot();
-
     setLegend();
-
     TickerTime();
-
-    // start communications between gui & ros
-connections();
-    timer = new QTimer(this);
-connect(timer, SIGNAL(timeout()), this, SLOT(ROSRUN() ));
-
-    timer->start(1); 
+    connections();
 }
-
-
 MainWindow::~MainWindow()
 {
     stop_recording();
 }
-
-
-
 void MainWindow::ROSRUN()
 {
     qnode.run();
@@ -144,6 +129,22 @@ bluePen.setWidthF(2);
 //goal 1234
 //pose setpoint 1234
 //vel_yaw 4
+
+
+ui->plot_1_1->clearGraphs();
+ui->plot_1_2->clearGraphs();
+ui->plot_1_3->clearGraphs();
+ui->plot_1_4->clearGraphs();
+ui->plot_2_1->clearGraphs();
+ui->plot_2_2->clearGraphs();
+ui->plot_2_3->clearGraphs();
+ui->plot_2_4->clearGraphs();
+ui->plot_3_1->clearGraphs();
+ui->plot_3_2->clearGraphs();
+ui->plot_3_3->clearGraphs();
+ui->plot_4_1->clearGraphs();
+ui->plot_4_2->clearGraphs();
+ui->plot_4_3->clearGraphs();
 
 // row 1
     
@@ -331,39 +332,43 @@ void MainWindow::realtimeDataSlot1(double x,double y,double z,double roll,double
     double key = time.elapsed()/1000.0; // time elapsed since start of demo, in seconds
     static double lastPointKey = 0;
     static double lastYaw = -100.0;
-//qDebug() << lastPointKey;
-    if (key-lastPointKey > 0.002) // at most add point every 2 ms
+
+// for simplicity we just record offset(last time we click start button)
+// and make the timeline back to 0
+    double wanted_key = key-offset;
+//qDebug() << "offset "<<offset;
+    if (key-lastPointKey1 > 0.002) // at most add point every 2 ms
     {
 
-      ui->plot_1_1->graph(0)->addData(key, x);
-      ui->plot_1_2->graph(0)->addData(key, y);
-      ui->plot_1_3->graph(0)->addData(key, z);
+      ui->plot_1_1->graph(0)->addData(wanted_key, x);
+      ui->plot_1_2->graph(0)->addData(wanted_key, y);
+      ui->plot_1_3->graph(0)->addData(wanted_key, z);
 
       if(fabs(lastYaw) > acos(-1.0) ) // need an initial value
           lastYaw = yaw;
-
-      if( fabs( ( yaw - lastYaw )/(key-lastPointKey) )>100.0 ) 
+      // yaw might have huge disturb on -pi to pi due to noise
+      if( fabs( ( yaw - lastYaw )/(key-lastPointKey) )>50.0 ) 
           yaw = lastYaw;
 
-      ui->plot_1_4->graph(0)->addData(key, yaw);
+      ui->plot_1_4->graph(0)->addData(wanted_key, yaw);
 
       if(goal_val.size() > 0 )
       {
-          ui->plot_1_1->graph(1)->addData(key, goal_val[0]);
-          ui->plot_1_2->graph(1)->addData(key, goal_val[1]);
-          ui->plot_1_3->graph(1)->addData(key, goal_val[2]);
-          ui->plot_1_4->graph(1)->addData(key, goal_val[5]);
+          ui->plot_1_1->graph(1)->addData(wanted_key, goal_val[0]);
+          ui->plot_1_2->graph(1)->addData(wanted_key, goal_val[1]);
+          ui->plot_1_3->graph(1)->addData(wanted_key, goal_val[2]);
+          ui->plot_1_4->graph(1)->addData(wanted_key, goal_val[5]);
       }
       if(position_setpoint_val.size() > 0 )
       {
-          ui->plot_1_1->graph(2)->addData(key, position_setpoint_val[0]);
-          ui->plot_1_2->graph(2)->addData(key, position_setpoint_val[1]);
-          ui->plot_1_3->graph(2)->addData(key, position_setpoint_val[2]);
-          ui->plot_1_4->graph(2)->addData(key, position_setpoint_val[5]);
+          ui->plot_1_1->graph(2)->addData(wanted_key, position_setpoint_val[0]);
+          ui->plot_1_2->graph(2)->addData(wanted_key, position_setpoint_val[1]);
+          ui->plot_1_3->graph(2)->addData(wanted_key, position_setpoint_val[2]);
+          ui->plot_1_4->graph(2)->addData(wanted_key, position_setpoint_val[5]);
       }
       if(velocity_yaw_val.size() > 0 )
       {
-          ui->plot_1_4->graph(3)->addData(key, velocity_yaw_val[3]);
+          ui->plot_1_4->graph(3)->addData(wanted_key, velocity_yaw_val[3]);
       }
 
       ui->plot_1_1->graph(0)->rescaleValueAxis(true);
@@ -384,7 +389,7 @@ void MainWindow::realtimeDataSlot1(double x,double y,double z,double roll,double
       ui->plot_1_4->graph(3)->rescaleValueAxis(true);
 
       lastYaw = yaw;
-      lastPointKey = key;
+      lastPointKey1 = key;
     }
 
     if(stop == 0)
@@ -394,11 +399,11 @@ void MainWindow::realtimeDataSlot1(double x,double y,double z,double roll,double
         ui->horizontalScrollBar_1->setValue( lim );
         
         // Range has to be int
-        ui->horizontalScrollBar_1->setRange(0, int(ceil(key)));
-        ui->plot_1_1->xAxis->setRange( key, timescale_1, Qt::AlignRight);
-        ui->plot_1_2->xAxis->setRange( key, timescale_1, Qt::AlignRight);
-        ui->plot_1_3->xAxis->setRange( key, timescale_1, Qt::AlignRight);
-        ui->plot_1_4->xAxis->setRange( key, timescale_1, Qt::AlignRight);
+        ui->horizontalScrollBar_1->setRange(0, int(ceil(wanted_key)));
+        ui->plot_1_1->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
+        ui->plot_1_2->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
+        ui->plot_1_3->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
+        ui->plot_1_4->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
     }
     else
     {
@@ -406,7 +411,15 @@ void MainWindow::realtimeDataSlot1(double x,double y,double z,double roll,double
         ui->plot_1_2->xAxis->setRange( ui->horizontalScrollBar_1->value(), timescale_1, Qt::AlignRight);
         ui->plot_1_3->xAxis->setRange( ui->horizontalScrollBar_1->value(), timescale_1, Qt::AlignRight);
         ui->plot_1_4->xAxis->setRange( ui->horizontalScrollBar_1->value(), timescale_1, Qt::AlignRight);
+/*
+        ui->plot_1_1->xAxis->setRange( ui->horizontalScrollBar_1->value() - offset, timescale_1, Qt::AlignRight);
+        ui->plot_1_2->xAxis->setRange( ui->horizontalScrollBar_1->value() - offset, timescale_1, Qt::AlignRight);
+        ui->plot_1_3->xAxis->setRange( ui->horizontalScrollBar_1->value() - offset, timescale_1, Qt::AlignRight);
+        ui->plot_1_4->xAxis->setRange( ui->horizontalScrollBar_1->value() - offset, timescale_1, Qt::AlignRight);
+*/
     }
+//qDebug() << "lastPointKey "<<lastPointKey1;
+//qDebug() << "timer "<< ui->horizontalScrollBar_1->value();
     ui->plot_1_1->replot();
     ui->plot_1_2->replot();
     ui->plot_1_3->replot();
@@ -425,26 +438,31 @@ void MainWindow::realtimeDataSlot2(double vx,double vy,double vz,double vroll,do
     static QTime time(QTime::currentTime());
     double key = time.elapsed()/1000.0; // time elapsed since start of demo, in seconds
     static double lastPointKey = 0;
-    if (key-lastPointKey > 0.002) // at most add point every 2 ms
+
+// for simplicity we just record offset(last time we click start button)
+// and make the timeline back to 0
+    double wanted_key = key-offset;
+
+    if (key-lastPointKey2 > 0.002) // at most add point every 2 ms
     {
-      ui->plot_2_1->graph(0)->addData(key, vx);
-      ui->plot_2_2->graph(0)->addData(key, vy);
-      ui->plot_2_3->graph(0)->addData(key, vz);
-      ui->plot_2_4->graph(0)->addData(key, vyaw);
+      ui->plot_2_1->graph(0)->addData(wanted_key, vx);
+      ui->plot_2_2->graph(0)->addData(wanted_key, vy);
+      ui->plot_2_3->graph(0)->addData(wanted_key, vz);
+      ui->plot_2_4->graph(0)->addData(wanted_key, vyaw);
 
       if(velocity_setpoint_val.size() > 0 )
       {
-          ui->plot_2_1->graph(1)->addData(key, velocity_setpoint_val[0]);
-          ui->plot_2_2->graph(1)->addData(key, velocity_setpoint_val[1]);
-          ui->plot_2_3->graph(1)->addData(key, velocity_setpoint_val[2]);
-          ui->plot_2_4->graph(1)->addData(key, velocity_setpoint_val[5]);
+          ui->plot_2_1->graph(1)->addData(wanted_key, velocity_setpoint_val[0]);
+          ui->plot_2_2->graph(1)->addData(wanted_key, velocity_setpoint_val[1]);
+          ui->plot_2_3->graph(1)->addData(wanted_key, velocity_setpoint_val[2]);
+          ui->plot_2_4->graph(1)->addData(wanted_key, velocity_setpoint_val[5]);
       }
 
       if(velocity_yaw_val.size() > 0 )
       {
-          ui->plot_2_1->graph(2)->addData(key, velocity_yaw_val[0]);
-          ui->plot_2_2->graph(2)->addData(key, velocity_yaw_val[1]);
-          ui->plot_2_3->graph(2)->addData(key, velocity_yaw_val[2]);
+          ui->plot_2_1->graph(2)->addData(wanted_key, velocity_yaw_val[0]);
+          ui->plot_2_2->graph(2)->addData(wanted_key, velocity_yaw_val[1]);
+          ui->plot_2_3->graph(2)->addData(wanted_key, velocity_yaw_val[2]);
       }
 
       ui->plot_2_1->graph(0)->rescaleValueAxis(true);
@@ -461,7 +479,7 @@ void MainWindow::realtimeDataSlot2(double vx,double vy,double vz,double vroll,do
       ui->plot_2_2->graph(2)->rescaleValueAxis(true);
       ui->plot_2_3->graph(2)->rescaleValueAxis(true);
 
-      lastPointKey = key;
+      lastPointKey2 = key;
     }
 
     if(stop == 0)
@@ -472,11 +490,11 @@ void MainWindow::realtimeDataSlot2(double vx,double vy,double vz,double vroll,do
         ui->horizontalScrollBar_1->setValue( lim );
         
         // Range has to be int
-        ui->horizontalScrollBar_1->setRange(0, int(ceil(key)));
-        ui->plot_2_1->xAxis->setRange( key, timescale_1, Qt::AlignRight);
-        ui->plot_2_2->xAxis->setRange( key, timescale_1, Qt::AlignRight);
-        ui->plot_2_3->xAxis->setRange( key, timescale_1, Qt::AlignRight);
-        ui->plot_2_4->xAxis->setRange( key, timescale_1, Qt::AlignRight);
+        ui->horizontalScrollBar_1->setRange(0, int(ceil(wanted_key)));
+        ui->plot_2_1->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
+        ui->plot_2_2->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
+        ui->plot_2_3->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
+        ui->plot_2_4->xAxis->setRange( wanted_key, timescale_1, Qt::AlignRight);
     }
     else
     {
@@ -503,25 +521,30 @@ void MainWindow::realtimeDataSlot3(double ax,double ay,double az)
     static double last_ax = 0;
     static double last_ay = 0;
     static double last_az = 0;
+
+// for simplicity we just record offset(last time we click start button)
+// and make the timeline back to 0
     double period = key-lastPointKey;
-    if (key-lastPointKey > 0.002) // at most add point every 2 ms
+
+    double wanted_key = key - offset;
+    if (key-lastPointKey3 > 0.002) // at most add point every 2 ms
     {
-      ui->plot_3_1->graph(0)->addData(key, ax);
-      ui->plot_3_2->graph(0)->addData(key, ay);
-      ui->plot_3_3->graph(0)->addData(key, az);
+      ui->plot_3_1->graph(0)->addData(wanted_key, ax);
+      ui->plot_3_2->graph(0)->addData(wanted_key, ay);
+      ui->plot_3_3->graph(0)->addData(wanted_key, az);
 
       ui->plot_3_1->graph(0)->rescaleValueAxis(true);
       ui->plot_3_2->graph(0)->rescaleValueAxis(true);
       ui->plot_3_3->graph(0)->rescaleValueAxis(true);
 ///*
-      ui->plot_4_1->graph(0)->addData(key, (ax-last_ax)/period );
-      ui->plot_4_2->graph(0)->addData(key, (ay-last_ay)/period );
-      ui->plot_4_3->graph(0)->addData(key, (az-last_az)/period );
+      ui->plot_4_1->graph(0)->addData(wanted_key, (ax-last_ax)/period );
+      ui->plot_4_2->graph(0)->addData(wanted_key, (ay-last_ay)/period );
+      ui->plot_4_3->graph(0)->addData(wanted_key, (az-last_az)/period );
 
       ui->plot_4_1->graph(0)->rescaleValueAxis(true);
       ui->plot_4_2->graph(0)->rescaleValueAxis(true);
       ui->plot_4_3->graph(0)->rescaleValueAxis(true);
-      lastPointKey = key;
+      lastPointKey3 = key;
       last_ax = ax;
       last_ay = ay;
       last_az = az;
@@ -535,14 +558,14 @@ void MainWindow::realtimeDataSlot3(double ax,double ay,double az)
         ui->horizontalScrollBar_2->setValue( lim );
         
         // Range has to be int
-        ui->horizontalScrollBar_2->setRange(0, int(ceil(key)));
-        ui->plot_3_1->xAxis->setRange( key, timescale_2, Qt::AlignRight);
-        ui->plot_3_2->xAxis->setRange( key, timescale_2, Qt::AlignRight);
-        ui->plot_3_3->xAxis->setRange( key, timescale_2, Qt::AlignRight);
+        ui->horizontalScrollBar_2->setRange(0, int(ceil(wanted_key)));
+        ui->plot_3_1->xAxis->setRange( wanted_key, timescale_2, Qt::AlignRight);
+        ui->plot_3_2->xAxis->setRange( wanted_key, timescale_2, Qt::AlignRight);
+        ui->plot_3_3->xAxis->setRange( wanted_key, timescale_2, Qt::AlignRight);
 ///*
-        ui->plot_4_1->xAxis->setRange( key, timescale_2, Qt::AlignRight);
-        ui->plot_4_2->xAxis->setRange( key, timescale_2, Qt::AlignRight);
-        ui->plot_4_3->xAxis->setRange( key, timescale_2, Qt::AlignRight);
+        ui->plot_4_1->xAxis->setRange( wanted_key, timescale_2, Qt::AlignRight);
+        ui->plot_4_2->xAxis->setRange( wanted_key, timescale_2, Qt::AlignRight);
+        ui->plot_4_3->xAxis->setRange( wanted_key, timescale_2, Qt::AlignRight);
 //*/
 
     }
@@ -835,8 +858,9 @@ qDebug() << "connections!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     connect(ui->start_recording_btn,SIGNAL(clicked()),this,SLOT(start_recording() ) );
     connect(ui->stop_recording_btn,SIGNAL(clicked()),this,SLOT(stop_recording() ) );
 
-
-
+    connect(ui->start_btn,SIGNAL(clicked()),this,SLOT(start_from_the_beginning()) );
+    //connect(ui->start_btn,SIGNAL(clicked()),this,SLOT(TickerTime()) );
+    
     connect(ui->refreash_topic_btn,SIGNAL(clicked()),this,SLOT(refreashTopicList() ) );
 
     // power signal emit from qnode
@@ -858,9 +882,97 @@ qDebug() << "connections!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 
     connect(&qnode,SIGNAL(velocity_yaw(double,double,double,double)),this,SLOT(slot_velocity_yaw(double,double,double,double)));
     connect(&qnode,SIGNAL(velocity_setpoint(double,double,double,double,double,double)),this,SLOT(slot_velocity_setpoint(double,double,double,double,double,double)));
-
+    
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(ROSRUN() ));
+    timer->start(1);
 } // end of connections()
 
+void MainWindow::disconnections()
+{
+qDebug() << "disconnections!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    
+    (&qnode)->disconnect();
+
+    //connect(ui->plot_1_1->xAxis, SIGNAL( rangeChanged(QCPRange) ), this, SLOT(xAxis_1_Changed( std::pair<int, QCPRange> ) )) ;
+    //connect(ui->plot_1_1->xAxis, SIGNAL(p1(1,rangeChanged(QCPRange)) ), this, SLOT(xAxisChanged( std::pair<int, QCPRange> ) )) ;
+
+    ui->plot_1_1->xAxis->disconnect();
+    ui->plot_1_2->xAxis->disconnect();
+    ui->plot_1_3->xAxis->disconnect();
+    ui->plot_1_4->xAxis->disconnect();
+
+    ui->plot_2_1->xAxis->disconnect();
+    ui->plot_2_2->xAxis->disconnect();
+    ui->plot_2_3->xAxis->disconnect();
+    ui->plot_2_4->xAxis->disconnect();
+
+    ui->plot_3_1->xAxis->disconnect();
+    ui->plot_3_2->xAxis->disconnect();
+    ui->plot_3_3->xAxis->disconnect();
+
+    ui->plot_4_1->xAxis->disconnect();
+    ui->plot_4_2->xAxis->disconnect();
+    ui->plot_4_3->xAxis->disconnect();
+
+    ui->plot_1_1->yAxis->disconnect();
+    ui->plot_1_2->yAxis->disconnect();
+    ui->plot_1_3->yAxis->disconnect();
+    ui->plot_1_4->yAxis->disconnect();
+
+    ui->plot_2_1->yAxis->disconnect();
+    ui->plot_2_2->yAxis->disconnect();
+    ui->plot_2_3->yAxis->disconnect();
+    ui->plot_2_4->yAxis->disconnect();
+
+    ui->plot_3_1->yAxis->disconnect();
+    ui->plot_3_2->yAxis->disconnect();
+    ui->plot_3_3->yAxis->disconnect();
+
+    ui->plot_4_1->yAxis->disconnect();
+    ui->plot_4_2->yAxis->disconnect();
+    ui->plot_4_3->yAxis->disconnect();
+
+    ui->verticalScrollBar_1_1->disconnect();
+    ui->verticalScrollBar_1_2->disconnect();
+    ui->verticalScrollBar_1_3->disconnect();
+    ui->verticalScrollBar_1_4->disconnect();
+
+    ui->verticalScrollBar_2_1->disconnect();
+    ui->verticalScrollBar_2_2->disconnect();
+    ui->verticalScrollBar_2_3->disconnect();
+    ui->verticalScrollBar_2_4->disconnect();
+
+    ui->verticalScrollBar_3_1->disconnect();
+    ui->verticalScrollBar_3_2->disconnect();
+    ui->verticalScrollBar_3_3->disconnect();
+    ui->verticalScrollBar_4_1->disconnect();
+    ui->verticalScrollBar_4_2->disconnect();
+    ui->verticalScrollBar_4_3->disconnect();
+
+    ui->timescaleSlider_1->disconnect();
+    ui->timescaleSlider_2->disconnect();
+
+    ui->gripperSlider->disconnect();
+
+
+    ui-> save_pic_btn->disconnect();
+    ui-> update_btn->disconnect(); 
+    ui-> pause_btn->disconnect();
+
+    ui-> gripper_open_btn->disconnect();
+    ui-> gripper_close_btn->disconnect();
+
+
+    ui->start_recording_btn->disconnect();
+    ui->stop_recording_btn->disconnect();
+
+    ui->start_btn->disconnect();
+
+    ui->refreash_topic_btn->disconnect();
+
+    timer->disconnect();
+} // end of disconnections()
 
 
 
@@ -1110,12 +1222,20 @@ void MainWindow::save_pic_btn_clicked()
         qDebug() <<"Unable to create directory\n";
     }
 */
-    std::string Path = "./saved_plots";
 
+
+    std::string Path = "./saved_plots/test_" + std::to_string( int(ui->test_num->value()) ) ;
+    
+    std::string str = "mkdir -p " + Path;
+    char cmd[str.size() + 1];
+    strcpy( cmd , str.c_str() );
+    
+    //make an independent direction for each test
     DIR *dir;   
     if ((dir=opendir(Path.c_str())) == NULL)   
     {   
-        system("mkdir -p ./saved_plots");      //system( s.c_str() );
+        //system("mkdir -p ./saved_plots");      //system( s.c_str() );
+	system(cmd);
     }  
 
     QString time_str;
@@ -1129,23 +1249,28 @@ qDebug()<<"plots saved at: " + time_str;
     if (!file.open(QIODevice::WriteOnly)) qDebug() << file.errorString();
     else {}
 */
+
+    QString test_number =  QString::number(int(ui->test_num->value()));
+    QString prefix = QString::fromStdString(Path) + "/" + "test_" + test_number + "_" + time_str;
+    
     QString filename;
-    filename = "saved_plots/"+time_str+"position_x.png";
+
+    filename = prefix + "position_x.png";
     ui->plot_1_1->savePng( filename,ui->plot_1_1->width(), ui->plot_1_1->height() );
-    filename = "saved_plots/"+time_str+"position_y.png";
+    filename = prefix + "position_y.png";
     ui->plot_1_2->savePng( filename,ui->plot_1_2->width(), ui->plot_1_2->height() );
-    filename = "saved_plots/"+time_str+"position_z.png";
+    filename = prefix + "position_z.png";
     ui->plot_1_3->savePng( filename,ui->plot_1_3->width(), ui->plot_1_3->height() );
-    filename = "saved_plots/"+time_str+"position_yaw.png";
+    filename = prefix + "position_yaw.png";
     ui->plot_1_4->savePng( filename,ui->plot_1_4->width(), ui->plot_1_4->height() );
 
-    filename = "saved_plots/"+time_str+"velocity_x.png";
+    filename = prefix + "velocity_x.png";
     ui->plot_2_1->savePng( filename,ui->plot_2_1->width(), ui->plot_2_1->height() );
-    filename = "saved_plots/"+time_str+"velocity_y.png";
+    filename = prefix + "velocity_y.png";
     ui->plot_2_2->savePng( filename,ui->plot_2_2->width(), ui->plot_2_2->height() );
-    filename = "saved_plots/"+time_str+"velocity_z.png";
+    filename = prefix + "velocity_z.png";
     ui->plot_2_3->savePng( filename,ui->plot_2_3->width(), ui->plot_2_3->height() );
-    filename = "saved_plots/"+time_str+"velocity_yaw.png";
+    filename = prefix + "velocity_yaw.png";
     ui->plot_2_4->savePng( filename,ui->plot_2_4->width(), ui->plot_2_4->height() );
 
 }

@@ -28,7 +28,6 @@ QNode::QNode(int argc, char** argv ) :
 {
 
 }
-
 QNode::~QNode() 
 {
     if(ros::isStarted())
@@ -38,6 +37,19 @@ QNode::~QNode()
     }
 
     wait();
+}
+void QNode::stop() 
+{
+	ros::V_string v_nodes;
+	ros::master::getNodes(v_nodes);
+
+	std::string node_name = std::string("px4_gui");
+	auto it = std::find(v_nodes.begin(), v_nodes.end(), node_name.c_str());
+	if (it != v_nodes.end()){
+	    std::string cmd_str = "rosnode kill " + node_name;
+	    int ret = system(cmd_str.c_str());
+	}
+
 }
 
 // initialization *********************************
