@@ -1,0 +1,2 @@
+sudo apt-get install qtmultimedia5-dev
+sudo apt-get install ros-melodic-mavros ros-melodic-mavros-extras
