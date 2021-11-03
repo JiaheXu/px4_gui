@@ -27,7 +27,12 @@
 #include <cv_bridge/cv_bridge.h>              
 #include <sensor_msgs/image_encodings.h>  
 #include <visualization_msgs/Marker.h>
+
 #include "mavros_msgs/State.h"
+#include "mavros_msgs/CompanionProcessStatus.h"
+#include "mavros_msgs/StatusText.h"
+#include "mavros_msgs/EstimatorStatus.h"
+
 #include <sensor_msgs/Imu.h>
 #include <map>
 #include <QLabel>
@@ -71,6 +76,8 @@ Q_SIGNALS:
     void velocity_yaw(double vx,double vy,double vz,double yaw);
     void accel(double lx,double ly,double lz);
     void gripper(int);
+
+    void error_info(std::string info);
     
 private:
     int init_argc;
@@ -88,6 +95,11 @@ private:
     ros::Subscriber velocity_setpoint_sub; 
     ros::Subscriber velocity_yaw_sub;
     ros::Subscriber gripper_sub;
+
+    ros::Subscriber estimator_status_sub; 
+    ros::Subscriber companion_process_status_sub;
+    ros::Subscriber statustext_sub;
+
 
     ros::Publisher pose_marker_pub;
     ros::Publisher goal_pub;
@@ -113,6 +125,10 @@ private:
     std::string velocity_setpoint_topic;
     std::string ground_distance_topic;
 
+    std::string estimator_status_topic;
+    std::string companion_process_status_topic;
+    std::string statustext_topic;
+
     nav_msgs::Path path,goal_path;
 
     void gripperCallback(const std_msgs::UInt16 Command);
@@ -134,6 +150,10 @@ private:
     void accelCallback(const sensor_msgs::Imu::ConstPtr& accel);
     
     void velocity_yawCallback(const aerial_autonomy::VelocityYaw::ConstPtr& Velocity_yaw);
+
+    void estimator_statusCallback(const mavros_msgs::EstimatorStatus::ConstPtr& estimator_status);
+    void companion_process_statusCallback(const mavros_msgs::CompanionProcessStatus::ConstPtr& companion_process_status);
+    void statustextCallback(const mavros_msgs::StatusText::ConstPtr& statustext);
 
     
 };

@@ -14,6 +14,7 @@
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/PoseStamped.h>
 
+
 //*****************************************************************************
 //** Namespaces
 //*****************************************************************************
@@ -118,10 +119,13 @@ bool QNode::init()
     gripper_angle_topic = "/servo/angle";
     gripper_command_topic = "/servo/command";
 
+
+    estimator_status_topic = "/mavros/estimator_status";
+    companion_process_status_topic = "/mavros/companion_process/status";
+    statustext_topic = "/mavros/statustext/recv";
     //ground_distance = "/mavros/px4flow/ground_distance";
     // battery subscriber
     power_sub = n.subscribe( battery_topic ,1,&QNode::batteryCallback,this);
-
 
     //position subscriber  ///////// might need to change to local_pose_topic
     pos_sub = n.subscribe(pose_topic,10,&QNode::poseCallback,this);
@@ -149,6 +153,12 @@ bool QNode::init()
     gripper_sub = n.subscribe(gripper_topic,1,&QNode::gripperCallback,this);
 
     gripper_pub = n.advertise<std_msgs::UInt16>(gripper_topic, 1);
+
+// error info monitor 
+    estimator_status_sub = n.subscribe(estimator_status_topic,1,&QNode::estimator_statusCallback,this);
+    companion_process_status_sub = n.subscribe(companion_process_status_topic,1,&QNode::companion_process_statusCallback,this);
+
+//statustext_sub = n.subscribe(statustext_topic,1,&QNode::statustextCallback,this);
 
     return true;
 }
@@ -311,6 +321,67 @@ void QNode::goalCallback(const geometry_msgs::PoseStamped::ConstPtr& Pos)
 void QNode::batteryCallback(const sensor_msgs::BatteryState &message_holder)
 {
     emit power(message_holder.percentage , message_holder.voltage);
+}
+
+
+void QNode::estimator_statusCallback(const mavros_msgs::EstimatorStatus::ConstPtr& estimator_status)
+{
+/*
+ESTIMATOR_ATTITUDE	True if the attitude estimate is good
+ESTIMATOR_VELOCITY_HORIZ	True if the horizontal velocity estimate is good
+ESTIMATOR_VELOCITY_VERT	True if the vertical velocity estimate is good
+ESTIMATOR_POS_HORIZ_REL	True if the horizontal position (relative) estimate is good
+ESTIMATOR_POS_HORIZ_ABS	True if the horizontal position (absolute) estimate is good
+ESTIMATOR_POS_VERT_ABS	True if the vertical position (absolute) estimate is good
+ESTIMATOR_POS_VERT_AGL	True if the vertical position (above ground) estimate is good
+ESTIMATOR_CONST_POS_MODE	True if the EKF is in a constant position mode and is not using external measurements (eg GPS or optical flow)
+ESTIMATOR_PRED_POS_HORIZ_REL	True if the EKF has sufficient data to enter a mode that will provide a (relative) position estimate
+ESTIMATOR_PRED_POS_HORIZ_ABS	True if the EKF has sufficient data to enter a mode that will provide a (absolute) position estimate
+ESTIMATOR_GPS_GLITCH	True if the EKF has detected a GPS glitch
+ESTIMATOR_ACCEL_ERROR	True if the EKF has detected bad accelerometer data
+*/
+    if( estimator_status -> attitude_status_flag == false )
+	emit error_info("the attitude estimate is NOT good !!!");
+    if( estimator_status -> velocity_horiz_status_flag == false )
+	emit error_info("the horizontal velocity estimate is NOT good !!!");
+    if( estimator_status -> velocity_vert_status_flag == false )
+	emit error_info("the vertical velocity estimate is NOT good !!!");
+    if( estimator_status -> pos_horiz_rel_status_flag == false )
+	emit error_info("the horizontal position (relative) estimate is NOT good !!!");
+    if( estimator_status -> pos_horiz_abs_status_flag == false )
+	emit error_info("the horizontal position (absolute) estimate is NOT good !!!");
+    if( estimator_status -> pos_vert_abs_status_flag == false )
+	emit error_info("the vertical position (absolute) estimate is NOT good !!!");
+    if( estimator_status -> pos_vert_agl_status_flag == false )
+	emit error_info("the vertical position (above ground) estimate is NOT good !!!");
+
+
+}
+void QNode::companion_process_statusCallback(const mavros_msgs::CompanionProcessStatus::ConstPtr& companion_process_status)
+{
+/*
+uint8 MAV_STATE_UNINIT=0
+uint8 MAV_STATE_BOOT=1
+uint8 MAV_STATE_CALIBRATING=2
+uint8 MAV_STATE_STANDBY=3
+uint8 MAV_STATE_ACTIVE=4
+uint8 MAV_STATE_CRITICAL=5
+uint8 MAV_STATE_EMERGENCY=6
+uint8 MAV_STATE_POWEROFF=7
+uint8 MAV_STATE_FLIGHT_TERMINATION=8
+uint8 MAV_COMP_ID_OBSTACLE_AVOIDANCE=196
+uint8 MAV_COMP_ID_VISUAL_INERTIAL_ODOMETRY=197
+*/
+   if( companion_process_status->state == 5)
+	emit error_info("companion_process_status is CRITICAL !!!");
+
+   if( companion_process_status->state == 6)
+	emit error_info("companion_process_status is EMERGENCY !!!");
+
+}
+void QNode::statustextCallback(const mavros_msgs::StatusText::ConstPtr& statustext)
+{
+
 }
 
 }  // namespace px4_gui

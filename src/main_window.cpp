@@ -13,6 +13,9 @@
 #include <dirent.h> 
 #include "../include/px4_gui/main_window.hpp"
 
+
+#define max_height 4.0
+
 namespace px4_gui {
 
 using namespace Qt;
@@ -31,6 +34,7 @@ MainWindow::MainWindow(int argc, char** argv, QWidget *parent)
     qnode.init();
     // get current topics
     initTopicList();
+
     start_from_the_beginning();
 }
 void MainWindow::start_from_the_beginning()
@@ -347,7 +351,7 @@ void MainWindow::realtimeDataSlot1(double x,double y,double z,double roll,double
       if(fabs(lastYaw) > acos(-1.0) ) // need an initial value
           lastYaw = yaw;
       // yaw might have huge disturb on -pi to pi due to noise
-      if( fabs( ( yaw - lastYaw )/(key-lastPointKey) )>50.0 ) 
+      if( fabs( ( yaw - lastYaw )/(key-lastPointKey1) )>50.0 ) 
           yaw = lastYaw;
 
       ui->plot_1_4->graph(0)->addData(wanted_key, yaw);
@@ -867,6 +871,8 @@ qDebug() << "connections!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
 
     connect(&qnode,SIGNAL(power(float,float)),this,SLOT(slot_power(float,float)));
     connect(&qnode,SIGNAL(state(bool,std::string)),this,SLOT(slot_state(bool,std::string)));
+    connect(&qnode,SIGNAL(error_info(std::string)) , this , SLOT( slot_error_info(std::string) ) );
+
     connect(&qnode,SIGNAL(gripper(int)),this,SLOT(slot_gripper(int)));
 
     connect(&qnode,SIGNAL(position(double,double,double,double,double,double)),this,SLOT(realtimeDataSlot1(double,double,double,double,double,double)));
@@ -998,6 +1004,12 @@ void MainWindow::slot_state(bool armed,std::string mode)
 
 }
 
+void MainWindow::slot_error_info(std::string info)
+{
+    ui->statusbar->showMessage(QString::fromStdString(info));
+    ui->statusbar->setStyleSheet("color:red;");
+}
+
 void MainWindow::horzScrollBar_1_Changed(int value)
 {
 
@@ -1119,6 +1131,14 @@ void MainWindow::slot_position(double x,double y,double z,double roll,double pit
     ui->pose_x_label->setText( QString::number(x).mid(0,4) );
     ui->pose_y_label->setText( QString::number(y).mid(0,4) );
     ui->pose_z_label->setText( QString::number(z).mid(0,4) );
+// this max_height is defined on the top of the code, in case you need to change it
+    if( z > max_height )
+    {
+// when I define a public variable called_max_height in MainWindow, the code crushes, IDK Y
+//qDebug() << "entered if !!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+        ui->pose_z_label->setStyleSheet("color:red;");
+    }
+
     ui->pose_roll_label->setText( QString::number(roll).mid(0,4) );
     ui->pose_pitch_label->setText( QString::number(pitch).mid(0,4) );
     ui->pose_yaw_label->setText( QString::number(yaw).mid(0,4) );

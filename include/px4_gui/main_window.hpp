@@ -39,6 +39,10 @@ namespace px4_gui {
 
 class MainWindow : public QMainWindow
 {
+
+
+
+
     Q_OBJECT
     
     public:
@@ -92,6 +96,7 @@ class MainWindow : public QMainWindow
 
         void slot_power(float p,float v);
         void slot_state(bool, std::string);
+        void slot_error_info(std::string);
         void slot_position(double,double,double,double,double,double);
 
         void slot_goal(double,double,double,double,double,double);
